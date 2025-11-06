@@ -1,0 +1,56 @@
+### Django (дополнительно) ###
+# Собранные статические (после collectstatic)
+staticfiles/
+static_collected/
+# Локальные БД/бэкапы
+*.sqlite3
+*.sqlite3-*
+*.db
+*.db-*
+*.bak
+*.swp
+*.swo
+# Временные/генерируемые файлы (WeasyPrint может класть PDF/кеш в media — уже игнорируется)
+tmp/
+temp/
+*.pdf~
+
+# IDE/OS
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
+.DS_Store
+Thumbs.db
+
+### Python tooling (дополнительно) ###
+.ruff_cache/
+.pyre/
+.pytype/
+.mccabe_cache/
+.coverage.*
+pip-wheel-metadata/
+
+# direnv / env-файлы
+.envrc
+.env.*.local
+*.env
+
+### Vite / React Router v7 / Tailwind ###
+# Vite
+dist/
+.vite/
+# Storybook (если появится)
+.storybook-out/
+# Tailwind JIT кэш (если используешь)
+.tailwindcss-cache/
+# PostCSS кэш
+.postcss-cache/
+
+### Node tooling (дополнительно) ###
+# Package managers
+pnpm-lock.yaml
+.pnpm-store/
+npm-packages-offline-cache/
+# Turborepo/Task runners (если появятся)
+.turbo/
+.task/
