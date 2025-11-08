@@ -54,3 +54,6 @@ npm-packages-offline-cache/
 # Turborepo/Task runners (если появятся)
 .turbo/
 .task/
+
+#personalDev
+notes.md
