@@ -20,8 +20,8 @@ class Reservation(models.Model):
         ('canceled', 'Canceled'),
     ]
 
-    # Using string reference for Project model as it might not exist yet
-    projectId = models.ForeignKey('company.Project', on_delete=models.CASCADE, related_name='reservations')
+    # Reference to Project model from projects app
+    projectId = models.ForeignKey('projects.Project', on_delete=models.CASCADE, related_name='reservations')
     lineId = models.CharField(max_length=100)  # Reference to a line item in a quote or order
     itemType = models.CharField(max_length=10, choices=ITEM_TYPE_CHOICES)
     refId = models.IntegerField()  # ID of the referenced item (catalog item, kit, or asset)

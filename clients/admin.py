@@ -1,14 +1,14 @@
 from django.contrib import admin
-from .models import Account, Contact
+from .models import Clients, Contact
 
-@admin.register(Account)
-class AccountAdmin(admin.ModelAdmin):
-    list_display = ('name', 'type', 'vatNumber')
-    search_fields = ('name', 'vatNumber')
-    list_filter = ('type',)
+@admin.register(Clients)
+class ClientsAdmin(admin.ModelAdmin):
+    list_display = ('clientName', 'vatNumber')
+    search_fields = ('clientName', 'vatNumber')
+    list_filter = ('tags',)
 
 @admin.register(Contact)
 class ContactAdmin(admin.ModelAdmin):
-    list_display = ('name', 'account', 'role', 'email', 'phone')
+    list_display = ('name', 'client', 'role', 'email', 'phone')
     search_fields = ('name', 'email', 'phone')
     list_filter = ('role',)

@@ -19,7 +19,8 @@ class Company(models.Model):
 
 class User(AbstractUser):
     role = models.CharField(max_length=50)
-    company = models.ForeignKey('Company', related_name='users', on_delete=models.CASCADE)
+    # В модели User
+    company = models.ForeignKey('company.Company', on_delete=models.SET_NULL, null=True, blank=True)
 
     class Meta:
         verbose_name_plural = "users"
