@@ -20,7 +20,7 @@ class Vendor(models.Model):
     name = models.CharField(max_length=255)
     terms = models.TextField(blank=True, null=True)
     contacts = models.JSONField(blank=True, null=True)
-    company = models.ForeignKey(Company, related_name='venues', on_delete=models.CASCADE)
+    company = models.ForeignKey(Company, related_name='vendors', on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name
@@ -33,7 +33,7 @@ class TaxRule(models.Model):
     name = models.CharField(max_length=255)
     rate = models.DecimalField(max_digits=5, decimal_places=2)
     region = models.CharField(max_length=255, blank=True, null=True)
-    company = models.ForeignKey(Company, related_name='venues', on_delete=models.CASCADE)
+    company = models.ForeignKey(Company, related_name='tax_rules', on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name
@@ -47,7 +47,7 @@ class PricePolicy(models.Model):
     degressive = models.JSONField(blank=True, null=True)
     weekendRule = models.JSONField(blank=True, null=True)
     overtimeRule = models.JSONField(blank=True, null=True)
-    company = models.ForeignKey(Company, related_name='venues', on_delete=models.CASCADE)
+    company = models.ForeignKey(Company, related_name='price_policies', on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name

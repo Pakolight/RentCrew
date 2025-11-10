@@ -1,5 +1,5 @@
-### Django (дополнительно) ###
-# Собранные статические (после collectstatic)
+### Django (additional) ###
+# Collected static (after collectstatic)
 staticfiles/
 static_collected/
 # Локальные БД/бэкапы
@@ -10,7 +10,7 @@ static_collected/
 *.bak
 *.swp
 *.swo
-# Временные/генерируемые файлы (WeasyPrint может класть PDF/кеш в media — уже игнорируется)
+# Temporary/generated files (WeasyPrint can store PDF/cache in media - already ignored)
 tmp/
 temp/
 *.pdf~
@@ -22,7 +22,7 @@ temp/
 .DS_Store
 Thumbs.db
 
-### Python tooling (дополнительно) ###
+### Python tooling (optional) ###
 .ruff_cache/
 .pyre/
 .pytype/
@@ -30,7 +30,7 @@ Thumbs.db
 .coverage.*
 pip-wheel-metadata/
 
-# direnv / env-файлы
+# direnv / env-files
 .envrc
 .env.*.local
 *.env
@@ -39,11 +39,11 @@ pip-wheel-metadata/
 # Vite
 dist/
 .vite/
-# Storybook (если появится)
+# Storybook (if available)
 .storybook-out/
-# Tailwind JIT кэш (если используешь)
+# Tailwind JIT cache (if you use)
 .tailwindcss-cache/
-# PostCSS кэш
+# PostCSS cache
 .postcss-cache/
 
 ### Node tooling (дополнительно) ###
@@ -51,9 +51,12 @@ dist/
 pnpm-lock.yaml
 .pnpm-store/
 npm-packages-offline-cache/
-# Turborepo/Task runners (если появятся)
+# Turborepo/Task runners (if any)
 .turbo/
 .task/
 
 #personalDev
 notes.md
+
+#ide
+.idea
