@@ -17,12 +17,18 @@ type Pages = {
   "/login": {
     params: {};
   };
+  "/registration": {
+    params: {};
+  };
+  "/calendar": {
+    params: {};
+  };
 };
 
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/login";
+    page: "/" | "/login" | "/registration" | "/calendar";
   };
   "routes/home.tsx": {
     id: "routes/home";
@@ -32,10 +38,30 @@ type RouteFiles = {
     id: "routes/login";
     page: "/login";
   };
+  "routes/entery.tsx": {
+    id: "routes/entery";
+    page: "/registration";
+  };
+  "routes/registration.tsx": {
+    id: "routes/registration";
+    page: "/registration";
+  };
+  "routes/rent.tsx": {
+    id: "routes/rent";
+    page: "/calendar";
+  };
+  "routes/calendar.tsx": {
+    id: "routes/calendar";
+    page: "/calendar";
+  };
 };
 
 type RouteModules = {
   "root": typeof import("./app/root.tsx");
   "routes/home": typeof import("./app/routes/home.tsx");
   "routes/login": typeof import("./app/routes/login.tsx");
+  "routes/entery": typeof import("./app/routes/entery.tsx");
+  "routes/registration": typeof import("./app/routes/registration.tsx");
+  "routes/rent": typeof import("./app/routes/rent.tsx");
+  "routes/calendar": typeof import("./app/routes/calendar.tsx");
 };

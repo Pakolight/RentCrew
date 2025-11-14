@@ -133,7 +133,7 @@ Use these shapes when generating JSON.
 }
 
 ## 7) Frontend Navigation (expected views)
-Dashboard: today/week — outs/ins, overdue, payments
+Rent: today/week — outs/ins, overdue, payments
 
 CRM: accounts, deals, timeline
 

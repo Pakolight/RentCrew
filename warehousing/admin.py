@@ -17,4 +17,4 @@ class PicklistAdmin(admin.ModelAdmin):
 class ScanAdmin(admin.ModelAdmin):
     list_display = ('barcode', 'entityType', 'action', 'timestamp', 'userId', 'projectId')
     list_filter = ('entityType', 'action', 'timestamp')
-    search_fields = ('barcode', 'userId__username', 'projectId__name')
+    search_fields = ('barcode', 'userId__email', 'projectId__name')

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from .models import Company, User
 
 @admin.register(Company)
@@ -8,12 +8,19 @@ class CompanyAdmin(admin.ModelAdmin):
     search_fields = ('legalName', 'tradeName', 'vatNumber')
 
 @admin.register(User)
-class CustomUserAdmin(UserAdmin):
-    list_display = ('username', 'email', 'first_name', 'last_name', 'role', 'company', 'is_staff')
+class CustomUserAdmin(BaseUserAdmin):
+    list_display = ('email', 'first_name', 'last_name', 'role', 'company', 'is_staff')
     list_filter = ('role', 'company', 'is_staff', 'is_superuser')
-    fieldsets = UserAdmin.fieldsets + (
-        ('Custom Fields', {'fields': ('role', 'company')}),
+    fieldsets = (
+        (None, {'fields': ('email', 'password')}),
+        ('Personal info', {'fields': ('first_name', 'last_name', 'role', 'company')}),
+        ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
     )
-    add_fieldsets = UserAdmin.add_fieldsets + (
-        ('Custom Fields', {'fields': ('role', 'company')}),
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('email', 'password1', 'password2', 'first_name', 'last_name', 'role', 'company', 'is_staff', 'is_superuser'),
+        }),
     )
+    search_fields = ('email', 'first_name', 'last_name')
+    ordering = ('email',)
