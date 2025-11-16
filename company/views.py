@@ -5,7 +5,12 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from company.serializers import SessionLoginSerializer
+from rest_framework.generics import CreateAPIView
+from rest_framework.permissions import AllowAny
+from company.serializers import SessionLoginSerializer, CompanySerializer, UserSerializer
+
+
+from company.models import Company
 
 
 User = get_user_model()
@@ -21,6 +26,23 @@ def _serialize_user(user: User) -> dict:
         'companyId': user.company_id,
     }
 
+class CompanyCreateAPIView(CreateAPIView):
+    serializer_class = CompanySerializer
+    queryset = Company.objects.all()
+    permission_classes = [AllowAny]
+
+    def perform_create(self, serializer):
+        company = serializer.save()
+        user = User.objects.filter(id=self.request.data['owner']).first()
+        user.company = company
+        user.save()
+
+
+
+class UserCreateAPIView(CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [AllowAny]
 
 
 class SessionCSRFCookieView(APIView):

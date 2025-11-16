@@ -1,6 +1,11 @@
 from django.db import models
 from company.models import Company
 from refdata.models import PricePolicy
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
+
+
+
 
 # CatalogItem model for equipment catalog
 class CatalogItem(models.Model):
@@ -65,7 +70,6 @@ class Kit(models.Model):
     sku = models.CharField(max_length=50, unique=True)
     rate = models.DecimalField(max_digits=10, decimal_places=2)
     items = models.JSONField()  # Store as [{catalogItemId|kitId, qty}]
-    upright_only = models.BooleanField(default=False)
     company = models.ForeignKey(Company, related_name='kits', on_delete=models.CASCADE)
 
     def __str__(self):
@@ -73,6 +77,21 @@ class Kit(models.Model):
 
     class Meta:
         verbose_name_plural = "kits"
+
+
+class KitItem(models.Model):
+    kit = models.ForeignKey('Kit', on_delete=models.CASCADE, related_name='kit_items')
+
+    # Generic Foreign Key for communication with different models
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    item = GenericForeignKey('content_type', 'object_id')
+
+    quantity = models.PositiveIntegerField(default=1)
+
+    class Meta:
+        unique_together = ('kit', 'content_type', 'object_id')
+
 
 # Case model for storage containers
 class Case(models.Model):

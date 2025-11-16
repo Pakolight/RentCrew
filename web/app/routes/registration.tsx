@@ -1,9 +1,89 @@
+import type { Route } from "./+types/project";
+
 import { PhotoIcon, UserCircleIcon } from '@heroicons/react/24/solid'
 import { ChevronDownIcon } from '@heroicons/react/16/solid'
+import { Form, redirect } from  'react-router'
+import * as process from "node:process";
+import * as crypto from 'crypto';
+import dotenv from 'dotenv';
+dotenv.config({ path: './../.env' });
+
+
+
+export async function action({request,}: Route.ActionArgs) {
+  const formData = await request.formData()
+
+  function generatePassword(length = 8) {
+    const buffer = crypto.randomBytes(length);
+    return buffer.toString('base64').replace(/[+/=]/g, '').slice(0, length);
+  }
+
+  const BASE_URL = process.env.API_URL
+  const userApiRes = await fetch( `${BASE_URL}/api/auth/create/user/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      email: formData.get("email"),
+      first_name: formData.get("first_name"),
+      last_name: formData.get("last_name"),
+      role: 'user',
+      password: generatePassword(),
+    })
+  })
+
+  let userApiResJson: unknown = null;
+  const text = await userApiRes.text();
+  try { userApiResJson = text ? JSON.parse(text) : null; } catch { userApiResJson = text; }
+
+  const companyApiRes = await fetch( `${BASE_URL}/api/auth/create/company/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      "owner":
+          `${userApiResJson["id"]}`
+      ,
+      "legalName":
+          formData.get("legalName")
+      ,
+      "tradeName":
+          formData.get("tradeName")
+      ,
+      "vatNumber":
+          formData.get("vatNumber")
+      ,
+      "iban":
+          formData.get("iban")
+      ,
+      "country":
+          formData.get("country")
+      ,
+      "street_address":
+          formData.get("street_address")
+      ,
+      "city": 
+        formData.get("city")
+      ,
+      "state_province": 
+        formData.get("state_province")
+      ,
+      "zip_postal_code": 
+        formData.get("zip_postal_code")
+
+    })
+  })
+
+
+  return redirect('/login')
+}
+
 
 export default function Registration() {
   return (
-    <form>
+    <Form method={"POST"}>
       <div className="space-y-12">
         {/* Personal users Information section */}
         <div className="grid grid-cols-1 gap-x-8 gap-y-10 border-b border-gray-900/10 pb-12 md:grid-cols-3 dark:border-white/10">
@@ -79,7 +159,7 @@ export default function Registration() {
 
         <div className="grid grid-cols-1 gap-x-8 gap-y-10 border-b border-gray-900/10 pb-12 md:grid-cols-3 dark:border-white/10">
           <div>
-            <h2 className="text-base/7 font-semibold text-gray-900 dark:text-white">User profile</h2>
+            <h2 className="text-base/7 font-semibold text-gray-900 dark:text-white">Company profile</h2>
             <p className="mt-1 text-sm/6 text-gray-600 dark:text-gray-400">
               Заполните данные своей компании
             </p>
@@ -268,6 +348,6 @@ export default function Registration() {
           Save
         </button>
       </div>
-    </form>
+    </Form>
   )
 }

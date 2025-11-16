@@ -1,13 +1,18 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
 
+from company.models import Company, User
 
-class CompanySerializer (serializers.Serializer):
-    legalName = serializers.CharField(max_length=255)
-    tradeName = serializers.CharField(max_length=255)
-    vatNumber = serializers.CharField(max_length=50)
-    iban = serializers.CharField(max_length=50)
-    address = serializers.CharField(max_length=255)
+
+class CompanySerializer (serializers.ModelSerializer):
+    class Meta:
+        model = Company
+        fields = ["id", "owner", 'legalName', 'tradeName', 'vatNumber', 'iban',  'logo', 'country', 'street_address', 'city', 'state_province', 'zip_postal_code']
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'email', 'first_name', 'last_name', 'role', 'company', 'password']
 
 class SessionLoginSerializer(serializers.Serializer):
     email = serializers.EmailField()

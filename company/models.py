@@ -17,6 +17,8 @@ class Company(models.Model):
     state_province = models.CharField(max_length=100)
     zip_postal_code = models.CharField(max_length=20)
 
+    owner = models.ForeignKey('User', related_name='user_owner', on_delete=models.CASCADE)
+
     def __str__(self):
         return self.legalName
 
