@@ -2,7 +2,7 @@ import type { Route } from "./+types/project";
 
 import { PhotoIcon, UserCircleIcon } from '@heroicons/react/24/solid'
 import { ChevronDownIcon } from '@heroicons/react/16/solid'
-import { Form, json, redirect, useActionData, useSubmit } from 'react-router'
+import { Form, redirect, useActionData, useSubmit } from 'react-router'
 import * as process from "node:process";
 import * as crypto from 'crypto';
 import dotenv from 'dotenv';
@@ -56,7 +56,7 @@ export async function action({request,}: Route.ActionArgs) {
     })
   } catch (error) {
     console.error("Error while creating user", error);
-    return json({ error: "Не удалось создать пользователя. Попробуйте снова позднее." }, { status: 500 });
+    return JSON.stringify({ error: "Не удалось создать пользователя. Попробуйте снова позднее." }, { status: 500 });
   }
 
   let userApiResJson: unknown = null;
@@ -65,7 +65,7 @@ export async function action({request,}: Route.ActionArgs) {
 
   if (!userApiRes.ok) {
     console.error("User creation failed", userApiRes.status, userApiResJson);
-    return json({ error: "Ошибка при создании пользователя" }, { status: userApiRes.status });
+    return JSON.stringify({ error: "Ошибка при создании пользователя" }, { status: userApiRes.status });
   }
 
   const userId =
@@ -75,7 +75,7 @@ export async function action({request,}: Route.ActionArgs) {
 
   if (!userId) {
     console.error("User creation response missing id", userApiResJson);
-    return json({ error: "Ответ от сервера не содержит идентификатор пользователя" }, { status: 500 });
+    return JSON.stringify({ error: "Ответ от сервера не содержит идентификатор пользователя" }, { status: 500 });
   }
 
   let companyApiRes: Response;
@@ -100,7 +100,7 @@ export async function action({request,}: Route.ActionArgs) {
     })
   } catch (error) {
     console.error("Error while creating company", error);
-    return json({ error: "Не удалось создать компанию. Попробуйте снова позднее." }, { status: 500 });
+    return JSON.stringify({ error: "Не удалось создать компанию. Попробуйте снова позднее." }, { status: 500 });
   }
 
   const companyText = await companyApiRes.text();
@@ -109,7 +109,7 @@ export async function action({request,}: Route.ActionArgs) {
 
   if (!companyApiRes.ok) {
     console.error("Company creation failed", companyApiRes.status, companyApiResJson);
-    return json({ error: "Ошибка при создании компании" }, { status: companyApiRes.status });
+    return JSON.stringify({ error: "Ошибка при создании компании" }, { status: companyApiRes.status });
   }
 
   return redirect('/login')
