@@ -2,7 +2,7 @@ import type { Route } from "./+types/project";
 
 import { PhotoIcon, UserCircleIcon } from '@heroicons/react/24/solid'
 import { ChevronDownIcon } from '@heroicons/react/16/solid'
-import { Form, redirect, useSubmit } from 'react-router'
+import { Form, json, redirect, useActionData, useSubmit } from 'react-router'
 import * as process from "node:process";
 import * as crypto from 'crypto';
 import dotenv from 'dotenv';
@@ -39,72 +39,88 @@ export async function action({request,}: Route.ActionArgs) {
   }
 
   const BASE_URL = process.env.API_URL
-  const userApiRes = await fetch( `${BASE_URL}/api/auth/create/user/`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      email: formData.get("email"),
-      first_name: formData.get("first_name"),
-      last_name: formData.get("last_name"),
-      role: 'user',
-      password: generatePassword(),
+  let userApiRes: Response;
+  try {
+    userApiRes = await fetch(`${BASE_URL}/api/auth/create/user/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: formData.get("email"),
+        first_name: formData.get("first_name"),
+        last_name: formData.get("last_name"),
+        role: 'user',
+        password: generatePassword(),
+      })
     })
-  })
+  } catch (error) {
+    console.error("Error while creating user", error);
+    return json({ error: "Не удалось создать пользователя. Попробуйте снова позднее." }, { status: 500 });
+  }
 
   let userApiResJson: unknown = null;
-  const text = await userApiRes.text();
-  try { userApiResJson = text ? JSON.parse(text) : null; } catch { userApiResJson = text; }
+  const userText = await userApiRes.text();
+  try { userApiResJson = userText ? JSON.parse(userText) : null; } catch { userApiResJson = userText; }
 
-  const companyApiRes = await fetch( `${BASE_URL}/api/auth/create/company/`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      "owner":
-          `${userApiResJson["id"]}`
-      ,
-      "legalName":
-          formData.get("legalName")
-      ,
-      "tradeName":
-          formData.get("tradeName")
-      ,
-      "vatNumber":
-          formData.get("vatNumber")
-      ,
-      "iban":
-          formData.get("iban")
-      ,
-      "country":
-          formData.get("country")
-      ,
-      "street_address":
-          formData.get("street_address")
-      ,
-      "city":
-        formData.get("city")
-      ,
-      "state_province":
-        formData.get("state_province")
-      ,
-      "zip_postal_code":
-        formData.get("zip_postal_code")
+  if (!userApiRes.ok) {
+    console.error("User creation failed", userApiRes.status, userApiResJson);
+    return json({ error: "Ошибка при создании пользователя" }, { status: userApiRes.status });
+  }
 
+  const userId =
+    userApiResJson && typeof userApiResJson === "object" && "id" in userApiResJson
+      ? (userApiResJson as { id?: unknown }).id
+      : undefined;
+
+  if (!userId) {
+    console.error("User creation response missing id", userApiResJson);
+    return json({ error: "Ответ от сервера не содержит идентификатор пользователя" }, { status: 500 });
+  }
+
+  let companyApiRes: Response;
+  try {
+    companyApiRes = await fetch(`${BASE_URL}/api/auth/create/company/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        "owner": `${userId}`,
+        "legalName": formData.get("legalName"),
+        "tradeName": formData.get("tradeName"),
+        "vatNumber": formData.get("vatNumber"),
+        "iban": formData.get("iban"),
+        "country": formData.get("country"),
+        "street_address": formData.get("street_address"),
+        "city": formData.get("city"),
+        "state_province": formData.get("state_province"),
+        "zip_postal_code": formData.get("zip_postal_code"),
+      })
     })
-  })
+  } catch (error) {
+    console.error("Error while creating company", error);
+    return json({ error: "Не удалось создать компанию. Попробуйте снова позднее." }, { status: 500 });
+  }
 
+  const companyText = await companyApiRes.text();
+  let companyApiResJson: unknown = null;
+  try { companyApiResJson = companyText ? JSON.parse(companyText) : null; } catch { companyApiResJson = companyText; }
+
+  if (!companyApiRes.ok) {
+    console.error("Company creation failed", companyApiRes.status, companyApiResJson);
+    return json({ error: "Ошибка при создании компании" }, { status: companyApiRes.status });
+  }
 
   return redirect('/login')
 }
 
 
 export default function Registration() {
+  const actionData = useActionData<typeof action>();
   const submit = useSubmit();
   const {
-    register, 
+    register,
     handleSubmit, 
     formState: { errors, isSubmitting, isDirty, isValid }
   } = useForm<RegistrationFormData>({
@@ -135,6 +151,11 @@ export default function Registration() {
 
   return (
     <Form method="post" onSubmit={handleSubmit(onSubmit)}>
+      {actionData?.error && (
+        <div className="mb-6 rounded-md border border-red-300 bg-red-50 p-4 text-sm text-red-800 dark:border-red-900/30 dark:bg-red-900/10 dark:text-red-400">
+          {actionData.error}
+        </div>
+      )}
       {/* Error Summary */}
       {errorMessages.length > 0 && (
         <div className="mb-6 p-4 border border-red-300 rounded-md bg-red-50 dark:bg-red-900/10 dark:border-red-900/30">
