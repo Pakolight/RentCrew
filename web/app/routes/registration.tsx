@@ -2,16 +2,36 @@ import type { Route } from "./+types/project";
 
 import { PhotoIcon, UserCircleIcon } from '@heroicons/react/24/solid'
 import { ChevronDownIcon } from '@heroicons/react/16/solid'
-import { Form, redirect } from  'react-router'
+import { Form, redirect, useSubmit } from 'react-router'
 import * as process from "node:process";
 import * as crypto from 'crypto';
 import dotenv from 'dotenv';
-dotenv.config({ path: './../.env' });
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 
+// Define validation schema using zod
+const registrationSchema = z.object({
+  first_name: z.string().min(2, { message: "First name must be at least 2 characters" }),
+  last_name: z.string().min(2, { message: "Last name must be at least 2 characters" }),
+  email: z.string().email({ message: "Invalid email address" }),
+  legalName: z.string().min(2, { message: "Company name must be at least 2 characters" }),
+  tradeName: z.string().min(2, { message: "Trade name must be at least 2 characters" }),
+  vatNumber: z.string().min(3, { message: "VAT number must be at least 3 characters" }),
+  iban: z.string().min(5, { message: "IBAN must be at least 5 characters" }),
+  country: z.string().min(1, { message: "Country is required" }),
+  street_address: z.string().min(3, { message: "Street address must be at least 3 characters" }),
+  city: z.string().min(2, { message: "City must be at least 2 characters" }),
+  state_province: z.string().min(2, { message: "State/Province must be at least 2 characters" }),
+  zip_postal_code: z.string().min(3, { message: "ZIP/Postal code must be at least 3 characters" })
+});
 
+// Type for our form data
+type RegistrationFormData = z.infer<typeof registrationSchema>;
 
 export async function action({request,}: Route.ActionArgs) {
   const formData = await request.formData()
+  dotenv.config({ path: './../.env' });
 
   function generatePassword(length = 8) {
     const buffer = crypto.randomBytes(length);
@@ -64,13 +84,13 @@ export async function action({request,}: Route.ActionArgs) {
       "street_address":
           formData.get("street_address")
       ,
-      "city": 
+      "city":
         formData.get("city")
       ,
-      "state_province": 
+      "state_province":
         formData.get("state_province")
       ,
-      "zip_postal_code": 
+      "zip_postal_code":
         formData.get("zip_postal_code")
 
     })
@@ -82,8 +102,51 @@ export async function action({request,}: Route.ActionArgs) {
 
 
 export default function Registration() {
+  const submit = useSubmit();
+  const {
+    register, 
+    handleSubmit, 
+    formState: { errors, isSubmitting, isDirty, isValid }
+  } = useForm<RegistrationFormData>({
+    resolver: zodResolver(registrationSchema),
+    mode: "onBlur"
+  });
+
+  // Function to handle form submission
+  const onSubmit = (data: RegistrationFormData) => {
+    console.log("Form submitted successfully:", data);
+    // Form is valid, proceed with submission
+
+    // Create FormData and append all fields
+    const formData = new FormData();
+    Object.entries(data).forEach(([key, value]) => {
+      formData.append(key, value);
+    });
+
+    // Submit the form data to the action function
+    submit(formData, { method: "POST" });
+  };
+
+  // Get all error messages for display in the summary
+  const errorMessages = Object.entries(errors).map(([field, error]) => ({
+    field,
+    message: error?.message as string
+  }));
+
   return (
-    <Form method={"POST"}>
+    <Form method="post" onSubmit={handleSubmit(onSubmit)}>
+      {/* Error Summary */}
+      {errorMessages.length > 0 && (
+        <div className="mb-6 p-4 border border-red-300 rounded-md bg-red-50 dark:bg-red-900/10 dark:border-red-900/30">
+          <h3 className="text-sm font-medium text-red-800 dark:text-red-400">Please fix the following errors:</h3>
+          <ul className="mt-2 text-sm text-red-700 dark:text-red-500 list-disc list-inside">
+            {errorMessages.map(({ field, message }) => (
+              <li key={field}>{message}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       <div className="space-y-12">
         {/* Personal users Information section */}
         <div className="grid grid-cols-1 gap-x-8 gap-y-10 border-b border-gray-900/10 pb-12 md:grid-cols-3 dark:border-white/10">
@@ -102,11 +165,14 @@ export default function Registration() {
               <div className="mt-2">
                 <input
                   id="first_name"
-                  name="first_name"
+                  {...register("first_name")}
                   type="text"
                   autoComplete="given-name"
-                  className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+                  className={`block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 ${errors.first_name ? 'outline-red-500' : 'outline-gray-300'} placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500`}
                 />
+                {errors.first_name && (
+                  <p className="mt-1 text-sm text-red-600">{errors.first_name.message}</p>
+                )}
               </div>
             </div>
             <div className="sm:col-span-3">
@@ -116,11 +182,14 @@ export default function Registration() {
               <div className="mt-2">
                 <input
                   id="last_name"
-                  name="last_name"
+                  {...register("last_name")}
                   type="text"
                   autoComplete="family-name"
-                  className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+                  className={`block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 ${errors.last_name ? 'outline-red-500' : 'outline-gray-300'} placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500`}
                 />
+                {errors.last_name && (
+                  <p className="mt-1 text-sm text-red-600">{errors.last_name.message}</p>
+                )}
               </div>
             </div>
 
@@ -132,11 +201,14 @@ export default function Registration() {
               <div className="mt-2">
                 <input
                   id="email"
-                  name="email"
+                  {...register("email")}
                   type="email"
                   autoComplete="email"
-                  className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+                  className={`block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 ${errors.email ? 'outline-red-500' : 'outline-gray-300'} placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500`}
                 />
+                {errors.email && (
+                  <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+                )}
               </div>
             </div>
             <div className="col-span-full">
@@ -177,11 +249,14 @@ export default function Registration() {
                   </div>
                   <input
                     id="legalName"
-                    name="legalName"
+                    {...register("legalName")}
                     type="text"
                     placeholder="RentCrew"
-                    className="block min-w-0 grow bg-white py-1.5 pr-3 pl-1 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none sm:text-sm/6 dark:bg-transparent dark:text-white dark:placeholder:text-gray-500"
+                    className={`block min-w-0 grow bg-white py-1.5 pr-3 pl-1 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none sm:text-sm/6 dark:bg-transparent dark:text-white dark:placeholder:text-gray-500 ${errors.legalName ? 'border-red-500' : ''}`}
                   />
+                  {errors.legalName && (
+                    <p className="mt-1 text-sm text-red-600">{errors.legalName.message}</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -196,11 +271,14 @@ export default function Registration() {
                   </div>
                   <input
                     id="tradeName"
-                    name="tradeName"
+                    {...register("tradeName")}
                     type="text"
                     placeholder="Rent crew audio-vizual BV"
-                    className="block min-w-0 grow bg-white py-1.5 pr-3 pl-1 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none sm:text-sm/6 dark:bg-transparent dark:text-white dark:placeholder:text-gray-500"
+                    className={`block min-w-0 grow bg-white py-1.5 pr-3 pl-1 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none sm:text-sm/6 dark:bg-transparent dark:text-white dark:placeholder:text-gray-500 ${errors.tradeName ? 'border-red-500' : ''}`}
                   />
+                  {errors.tradeName && (
+                    <p className="mt-1 text-sm text-red-600">{errors.tradeName.message}</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -214,12 +292,15 @@ export default function Registration() {
 
                   </div>
                   <input
-                    id="first_name"
-                    name="vatNumber"
+                    id="vatNumber"
+                    {...register("vatNumber")}
                     type="text"
                     placeholder="BV123456 SN"
-                    className="block min-w-0 grow bg-white py-1.5 pr-3 pl-1 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none sm:text-sm/6 dark:bg-transparent dark:text-white dark:placeholder:text-gray-500"
+                    className={`block min-w-0 grow bg-white py-1.5 pr-3 pl-1 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none sm:text-sm/6 dark:bg-transparent dark:text-white dark:placeholder:text-gray-500 ${errors.vatNumber ? 'border-red-500' : ''}`}
                   />
+                  {errors.vatNumber && (
+                    <p className="mt-1 text-sm text-red-600">{errors.vatNumber.message}</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -234,11 +315,14 @@ export default function Registration() {
                   </div>
                   <input
                     id="iban"
-                    name="iban"
+                    {...register("iban")}
                     type="text"
                     placeholder="1234567BJ"
-                    className="block min-w-0 grow bg-white py-1.5 pr-3 pl-1 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none sm:text-sm/6 dark:bg-transparent dark:text-white dark:placeholder:text-gray-500"
+                    className={`block min-w-0 grow bg-white py-1.5 pr-3 pl-1 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none sm:text-sm/6 dark:bg-transparent dark:text-white dark:placeholder:text-gray-500 ${errors.iban ? 'border-red-500' : ''}`}
                   />
+                  {errors.iban && (
+                    <p className="mt-1 text-sm text-red-600">{errors.iban.message}</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -263,14 +347,18 @@ export default function Registration() {
               <div className="mt-2 grid grid-cols-1">
                 <select
                   id="country"
-                  name="country"
+                  {...register("country")}
                   autoComplete="country-name"
-                  className="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white py-1.5 pr-8 pl-3 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:*:bg-gray-800 dark:focus:outline-indigo-500"
+                  className={`col-start-1 row-start-1 w-full appearance-none rounded-md bg-white py-1.5 pr-8 pl-3 text-base text-gray-900 outline-1 -outline-offset-1 ${errors.country ? 'outline-red-500' : 'outline-gray-300'} focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:*:bg-gray-800 dark:focus:outline-indigo-500`}
                 >
-                  <option>United States</option>
-                  <option>Canada</option>
-                  <option>Mexico</option>
+                  <option value="">Select a country</option>
+                  <option value="United States">United States</option>
+                  <option value="Canada">Canada</option>
+                  <option value="Mexico">Mexico</option>
                 </select>
+                {errors.country && (
+                  <p className="mt-1 text-sm text-red-600">{errors.country.message}</p>
+                )}
                 <ChevronDownIcon
                   aria-hidden="true"
                   className="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 sm:size-4 dark:text-gray-400"
@@ -284,11 +372,14 @@ export default function Registration() {
               <div className="mt-2">
                 <input
                   id="street_address"
-                  name="street_address"
+                  {...register("street_address")}
                   type="text"
                   autoComplete="street-address"
-                  className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+                  className={`block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 ${errors.street_address ? 'outline-red-500' : 'outline-gray-300'} placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500`}
                 />
+                {errors.street_address && (
+                  <p className="mt-1 text-sm text-red-600">{errors.street_address.message}</p>
+                )}
               </div>
             </div>
             <div className="sm:col-span-2 sm:col-start-1">
@@ -298,11 +389,14 @@ export default function Registration() {
               <div className="mt-2">
                 <input
                   id="city"
-                  name="city"
+                  {...register("city")}
                   type="text"
                   autoComplete="address-level2"
-                  className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+                  className={`block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 ${errors.city ? 'outline-red-500' : 'outline-gray-300'} placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500`}
                 />
+                {errors.city && (
+                  <p className="mt-1 text-sm text-red-600">{errors.city.message}</p>
+                )}
               </div>
             </div>
             <div className="sm:col-span-2">
@@ -312,11 +406,14 @@ export default function Registration() {
               <div className="mt-2">
                 <input
                   id="state_province"
-                  name="state_province"
+                  {...register("state_province")}
                   type="text"
                   autoComplete="address-level1"
-                  className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+                  className={`block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 ${errors.state_province ? 'outline-red-500' : 'outline-gray-300'} placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500`}
                 />
+                {errors.state_province && (
+                  <p className="mt-1 text-sm text-red-600">{errors.state_province.message}</p>
+                )}
               </div>
             </div>
             <div className="sm:col-span-2">
@@ -326,11 +423,14 @@ export default function Registration() {
               <div className="mt-2">
                 <input
                   id="zip_postal_code"
-                  name="zip_postal_code"
+                  {...register("zip_postal_code")}
                   type="text"
                   autoComplete="postal-code"
-                  className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+                  className={`block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 ${errors.zip_postal_code ? 'outline-red-500' : 'outline-gray-300'} placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500`}
                 />
+                {errors.zip_postal_code && (
+                  <p className="mt-1 text-sm text-red-600">{errors.zip_postal_code.message}</p>
+                )}
               </div>
             </div>
           </div>
@@ -343,9 +443,14 @@ export default function Registration() {
         </button>
         <button
           type="submit"
-          className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:shadow-none dark:focus-visible:outline-indigo-500"
+          disabled={isSubmitting || !isDirty || !isValid}
+          className={`rounded-md px-3 py-2 text-sm font-semibold text-white shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:shadow-none dark:focus-visible:outline-indigo-500 ${
+            isSubmitting || !isDirty || !isValid
+              ? 'bg-indigo-400 cursor-not-allowed'
+              : 'bg-indigo-600 hover:bg-indigo-500 dark:bg-indigo-500'
+          }`}
         >
-          Save
+          {isSubmitting ? 'Saving...' : 'Save'}
         </button>
       </div>
     </Form>
