@@ -15,6 +15,7 @@ export default [
     ]),
     layout( "routes/rent.tsx", [
         route("calendar", "routes/calendar.tsx"),
+        route("catalog-items", "routes/catalog-items.tsx"),
 
     ]),
 

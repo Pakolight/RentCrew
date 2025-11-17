@@ -1,5 +1,5 @@
 from rest_framework.generics import CreateAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from equipment.models import CatalogItem
 from equipment.serializers import CatalogItemSerializer
 
@@ -9,7 +9,7 @@ class CatalogItemCreateAPIView(CreateAPIView):
     """
     queryset = CatalogItem.objects.all()
     serializer_class = CatalogItemSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
 class CatalogItemListCreateAPIView(ListCreateAPIView):
     """
@@ -17,7 +17,7 @@ class CatalogItemListCreateAPIView(ListCreateAPIView):
     """
     queryset = CatalogItem.objects.all()
     serializer_class = CatalogItemSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get_queryset(self):
         """
@@ -38,7 +38,7 @@ class CatalogItemRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     """
     queryset = CatalogItem.objects.all()
     serializer_class = CatalogItemSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get_queryset(self):
         """

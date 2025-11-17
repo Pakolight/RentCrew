@@ -23,12 +23,15 @@ type Pages = {
   "/calendar": {
     params: {};
   };
+  "/catalog-items": {
+    params: {};
+  };
 };
 
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/login" | "/registration" | "/calendar";
+    page: "/" | "/login" | "/registration" | "/calendar" | "/catalog-items";
   };
   "routes/home.tsx": {
     id: "routes/home";
@@ -48,11 +51,15 @@ type RouteFiles = {
   };
   "routes/rent.tsx": {
     id: "routes/rent";
-    page: "/calendar";
+    page: "/calendar" | "/catalog-items";
   };
   "routes/calendar.tsx": {
     id: "routes/calendar";
     page: "/calendar";
+  };
+  "routes/catalog-items.tsx": {
+    id: "routes/catalog-items";
+    page: "/catalog-items";
   };
 };
 
@@ -64,4 +71,5 @@ type RouteModules = {
   "routes/registration": typeof import("./app/routes/registration.tsx");
   "routes/rent": typeof import("./app/routes/rent.tsx");
   "routes/calendar": typeof import("./app/routes/calendar.tsx");
+  "routes/catalog-items": typeof import("./app/routes/catalog-items.tsx");
 };
