@@ -1,4 +1,5 @@
 from rest_framework.generics import CreateAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.exceptions import NotAuthenticated
 from rest_framework.permissions import IsAuthenticated
 from equipment.models import CatalogItem
 from equipment.serializers import CatalogItemSerializer
@@ -23,13 +24,21 @@ class CatalogItemListCreateAPIView(ListCreateAPIView):
         """
         Filter queryset to only return CatalogItems belonging to the user's company.
         """
-        return CatalogItem.objects.filter(company=self.request.user.company)
+        user = self.request.user
+        if not user or not user.is_authenticated:
+            raise NotAuthenticated()
+
+        return CatalogItem.objects.filter(company=user.company)
 
     def perform_create(self, serializer):
         """
         Set the company to the user's company when creating a new CatalogItem.
         """
-        serializer.save(company=self.request.user.company)
+        user = self.request.user
+        if not user or not user.is_authenticated:
+            raise NotAuthenticated()
+
+        serializer.save(company=user.company)
 
 
 class CatalogItemRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
@@ -44,4 +53,8 @@ class CatalogItemRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
         """
         Filter queryset to only return CatalogItems belonging to the user's company.
         """
-        return CatalogItem.objects.filter(company=self.request.user.company)
+        user = self.request.user
+        if not user or not user.is_authenticated:
+            raise NotAuthenticated()
+
+        return CatalogItem.objects.filter(company=user.company)

@@ -17,5 +17,6 @@ export default [
         route("calendar", "routes/calendar.tsx"),
 
     ]),
+    route("catalog-items", "routes/catalog-items.tsx"),
 
 ] satisfies RouteConfig;
