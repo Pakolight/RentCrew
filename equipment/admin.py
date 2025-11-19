@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import CatalogItem, Asset, Kit, Case, StockLocation, Barcode
+from .models import CatalogItem, Asset, Kit, KitItem, Case, StockLocation, Barcode
 
 @admin.register(CatalogItem)
 class CatalogItemAdmin(admin.ModelAdmin):
@@ -22,6 +22,12 @@ class KitAdmin(admin.ModelAdmin):
     list_display = ('name', 'sku', 'rate', 'company')
     list_filter = ('company',)
     search_fields = ('name', 'sku')
+
+@admin.register(KitItem)
+class KitItemAdmin(admin.ModelAdmin):
+    list_display = ('kit', 'content_type', 'object_id', 'quantity')
+    list_filter = ('kit', 'content_type')
+    search_fields = ('kit__name', 'object_id')
 
 @admin.register(Case)
 class CaseAdmin(admin.ModelAdmin):

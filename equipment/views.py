@@ -9,7 +9,7 @@ class CatalogItemCreateAPIView(CreateAPIView):
     """
     queryset = CatalogItem.objects.all()
     serializer_class = CatalogItemSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
 class CatalogItemListCreateAPIView(ListCreateAPIView):
     """
@@ -17,9 +17,10 @@ class CatalogItemListCreateAPIView(ListCreateAPIView):
     """
     queryset = CatalogItem.objects.all()
     serializer_class = CatalogItemSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+
         """
         Filter queryset to only return CatalogItems belonging to the user's company.
         """
@@ -38,7 +39,7 @@ class CatalogItemRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     """
     queryset = CatalogItem.objects.all()
     serializer_class = CatalogItemSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         """

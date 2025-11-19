@@ -1,19 +1,20 @@
 import type { Route } from "./+types/project";
 import { z } from 'zod';
-import {Form, redirect} from "react-router";
+import { Form, redirect } from "react-router";
+import {commitSession, getSession, destroySession} from "~/server"
 
 
-export async function action({request, }: Route.ActionArgs) {
+export async function action({ request }: Route.ActionArgs) {
   const form = await request.formData();
   const email = form.get('email');
   const password = form.get('password');
-
+  const session = await getSession(request.headers.get('Cookie'));
   const LoginSchema = z.object({
     email: z.string().email('Некорректный email'),
     password: z.string().min(6, 'Минимум 6 символов'),
   });
 
-  const parsed = LoginSchema.safeParse({email, password})
+  const parsed = LoginSchema.safeParse({ email, password })
   if (!parsed.success) {
     return {
       status: 400,
@@ -21,29 +22,52 @@ export async function action({request, }: Route.ActionArgs) {
     };
   }
 
+
+
   const apiUrl = 'http://127.0.0.1:8000/api/auth/login/';
+
+  const payload = {
+    email: parsed.data.email, // или email - зависит от настройки Django
+    password: parsed.data.password,
+  };
+
   const apiRes = await fetch(apiUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(parsed.data),
+    body: JSON.stringify(payload),
   });
 
-  let apiJson: unknown = null;
-  const text = await apiRes.text();
-  try { apiJson = text ? JSON.parse(text) : null; } catch { apiJson = text; }
 
-  const header = new Headers();
-  const setCookieHeader = apiRes.headers.get('set-cookie');
-  header.append('Set-Cookie', setCookieHeader || '');
-  if (apiRes.ok) {
-    return redirect('/', { header });
+
+  if (!apiRes.ok) {
+    // Обработка ошибок
+    let errorMessage = 'Ошибка при входе в систему';
+    try {
+      const errorData = await apiRes.json();
+      errorMessage = errorData.detail || errorData.message || errorMessage;
+    } catch (e) {
+      // Если не удается распарсить JSON, используем текст
+      errorMessage = await apiRes.text() || errorMessage;
+    }
+
+    return {
+      status: apiRes.status,
+      body: errorMessage,
+    };
   }
 
-
-
+  const apiRestJson= await apiRes.json()
+  session.set("tokens", {...apiRestJson.tokens})
+  session.set('user', apiRestJson.user)
+  const headers = new Headers({
+                'Set-Cookie': await commitSession(session),
+            });
+  return redirect('/', {headers});
 }
+
+
 
 export default function Login() {
   return (
